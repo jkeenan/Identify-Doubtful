@@ -1,0 +1,8 @@
+Changes
+lib/Identify/Doubtful/rmtree.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+README
+t/001_load.t
