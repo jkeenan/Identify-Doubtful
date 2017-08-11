@@ -3,21 +3,33 @@ use strict;
 our $VERSION     = '0.01';
 our @ISA         = qw(Exporter);
 our @EXPORT_OK = qw(
-    detect_some_unsafe
+    fh_detect_some_unsafe
 );
+#detect_some_unsafe
 use Carp;
+use IO::File;
 
 
-sub detect_some_unsafe {
-    my $file = shift;
+#sub detect_some_unsafe {
+#    my $file = shift;
+#
+#    my $IN = IO::File->new($file, 'r');
+#    unless (defined $IN) {
+#        carp "Unable to open '$file'";
+#        return;
+#    }
+#    return fh_detect_some_unsafe($IN);
+#}
 
-    my @bads;
-    open my $IN, '<', $file or croak "unable to open";
+sub fh_detect_some_unsafe {
+    my $IN = shift;
+
     my $qrstring = qr/[^,]+/;
     my $qrcomma = qr/\s*,\s*/;
     my $qrarrayref = qr/\[[^]]+\]/;
     my $qrfalse = qr/(?:0|''|"")/;
     my $qrfatarrow = qr/\s+=>\s+/;
+    my @bads = ();
     while (my $l = <$IN>) {
         chomp $l;
         next if $l =~ m/^#/; # skip comments
@@ -48,7 +60,7 @@ sub detect_some_unsafe {
             }
         }
     }
-    close $IN or croak "unable to close";
+    $IN->close() or croak "unable to close";
     return \@bads;
 }
 
