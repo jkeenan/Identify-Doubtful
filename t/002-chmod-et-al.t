@@ -224,10 +224,7 @@ my @strings = (
     q|make_path($somedir,$someotherdir,'/foo/bar/baz',{verbose => 1,mode => 200})|,
 );
 
-@strings = (
-    q|make_path($somedir,$someotherdir,'/foo/bar/baz',{verbose => 1,mode => 200})|,
-);
 for my $s (@strings) {
-    like($s, m/$qr_chmod_et_al/, "'$s' matched");
+    like($s, $qr_chmod_et_al, "'$s' matched");
 }
 
