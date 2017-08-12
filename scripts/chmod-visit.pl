@@ -8,10 +8,11 @@ use Data::Dump qw( dd pp );
 #use List::Util qw( first );
 use CPAN::Mini::Visit::Simple;
 use File::Slurp;
-#use lib (
-#    '/home/jkeenan/gitwork/Identify-Doubtful-rmtree/lib'
-#);
-#use Identify::Doubtful qw( match_file_against_regex );
+use lib (
+    '/home/jkeenan/gitwork/Identify-Doubtful/blib/lib',
+    '/home/jkeenan/gitwork/Identify-Doubtful/lib'
+);
+use Identify::Doubtful qw( match_file_against_regex );
 #use Identify::Doubtful::chmod_et_al ();
 
 my $outputdir = "$ENV{HOMEDIR}/tmp";
@@ -76,6 +77,7 @@ for my $con (@contributors) {
 say "\nFinished" unless $quiet;
 
 # Conduct one visit for a given A/AB/ABELTJE directory in minicpan
+sub fh_detect_chmod_et_al { return []; }
 
 sub visit_contributor_distros {
     my ($con, $quiet) = @_;
@@ -97,14 +99,15 @@ sub visit_contributor_distros {
                 for my $f (@files) {
                     if (-f $f) {
                         #                        say "$distro: $f";
-                        my $aref;
-#                        $aref = match_file_against_regex(
-#                            $f,
-#                            \&Identify::Doubtful::chmod_et_al::fh_detect_chmod_et_al,
-#                        );
-#                        if (defined $aref and @{$aref}) {
-#                            $distros{$distro}{$f} = $aref;
-#                        }
+                        my $aref = [];
+                        $aref = match_file_against_regex(
+                            $f,
+                            #                            \&fh_detect_chmod_et_al,
+                            \&Identify::Doubtful::chmod_et_al::fh_detect_chmod_et_al,
+                        );
+                        if (defined $aref and @{$aref}) {
+                            $distros{$distro}{$f} = $aref;
+                        }
                     }
                     else {
                         say STDERR "Unable to locate $f";
