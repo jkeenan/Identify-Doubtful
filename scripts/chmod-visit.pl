@@ -3,24 +3,18 @@ use 5.12.0;
 use warnings;
 use Getopt::Long;
 use Carp;
-##use Data::Dumper;$Data::Dumper::Indent=1;
 use Data::Dump qw( dd pp );
-#use List::Util qw( first );
 use CPAN::Mini::Visit::Simple;
 use File::Slurp;
-use lib (
-    '/home/jkeenan/gitwork/Identify-Doubtful/blib/lib',
-    '/home/jkeenan/gitwork/Identify-Doubtful/lib'
-);
 use Identify::Doubtful qw( match_file_against_regex );
 use Identify::Doubtful::chmod_et_al qw( fh_detect_chmod_et_al );
 
 my $outputdir = "$ENV{HOMEDIR}/tmp";
 my ($contrib, $verbose, $quiet, $list) = ("") x 4;
 GetOptions(
+    "outputdir=s"   => \$outputdir,
 	"contrib"		=> \$contrib,
 	"verbose"		=> \$verbose,
-    "outputdir=s"   => \$outputdir,
     "quiet"         => \$quiet,
     "list"          => \$list, 
 ) or croak "Error in command-line arguments";
