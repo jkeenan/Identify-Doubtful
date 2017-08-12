@@ -208,7 +208,14 @@ my @strings = (
 
 my @more_strings = (
     q|mkdir "$dir/3", ; chmod 0, "$dir/3"|, # PERLANCAR/Module-Path-More-0.33/t/01-basics.t
-    q|chmod 0, "$dir/3"|, # PERLANCAR/Module-Path-More-0.33/t/01-basics.t
+    q|chmod 0, "$dir/3"|,   # PERLANCAR/Module-Path-More-0.33/t/01-basics.t
+    q|chmod 0, "$dir/sub"|, # MANWAR/Filesys-DiskUsage-0.10/t/02.warnings.t
+    q|chmod 0000, 'foo'|,   # PETDANCE/ack-2.18/t/ack-s.t
+    q|unless ( mkdir $f{baddir}, 0000 ) {|, # ADAMK/File-Flat-1.04/t/03_main.t
+    q|chmod 0, "$baddir/BAD\nNL3" or die|,  # ANDK/Perl-Repository-APC-2.002001/t/trimtrees.t
+    q|test !eval { chmod 0, $TAINT }, 'chmod'|, # AUDREYT/Perl6-Pugs-6.2.13/misc/pX/Common/Regexp-Test-Perl5Tests/t/op/taint.t
+    q|my $count = chmod 0200, 'writeable', 'not_readable',| # BDFOY/Test-File-1.443/t/setup_common
+
 );
 
 for my $s (@strings, @more_strings) {
