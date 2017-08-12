@@ -71,7 +71,6 @@ for my $con (@contributors) {
 say "\nFinished" unless $quiet;
 
 # Conduct one visit for a given A/AB/ABELTJE directory in minicpan
-sub fh_detect_chmod_et_al { return []; }
 
 sub visit_contributor_distros {
     my ($con, $quiet) = @_;
