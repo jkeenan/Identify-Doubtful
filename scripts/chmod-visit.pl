@@ -33,8 +33,8 @@ or
 my %bad_contributors = map { $_ => 1 } ( qw|
     D/DA/DAOTOAD
     W/WI/WILL
-    P/PE/PERLANCAR
 |);
+    #P/PE/PERLANCAR
 
 my @contributors = grep { ! $bad_contributors{$_} } @ARGV;
 if ($contrib) {
