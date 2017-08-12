@@ -206,6 +206,12 @@ my @strings = (
     q|make_path($somedir,$someotherdir,'/foo/bar/baz',{verbose => 1,mode => 200})|,
 );
 
+my @subset = (
+    q|chmod 0, \$config_file|,              # DAGOLDEN/CPAN-Reporter-1.2018.tar.gz t/03_config_file.t
+    q|chmod 0, \$no_read_file|,             # DAGOLDEN/File-RandomLine-0.20.tar.gz t/01-fast-algorithm.t
+    q|chmod( 0200,   \$d . '/5' )|,         # JKEENAN/File-Path-2.15.tar.gz File-Path-2.15.tar.gz
+);
+
 my @more_strings = (
     q|mkdir "$dir/3", ; chmod 0, "$dir/3"|, # PERLANCAR/Module-Path-More-0.33/t/01-basics.t
     q|chmod 0, "$dir/3"|,   # PERLANCAR/Module-Path-More-0.33/t/01-basics.t
@@ -214,12 +220,14 @@ my @more_strings = (
     q|unless ( mkdir $f{baddir}, 0000 ) {|, # ADAMK/File-Flat-1.04/t/03_main.t
     q|chmod 0, "$baddir/BAD\nNL3" or die|,  # ANDK/Perl-Repository-APC-2.002001/t/trimtrees.t
     q|test !eval { chmod 0, $TAINT }, 'chmod'|, # AUDREYT/Perl6-Pugs-6.2.13/misc/pX/Common/Regexp-Test-Perl5Tests/t/op/taint.t
-    q|my $count = chmod 0200, 'writeable', 'not_readable',| # BDFOY/Test-File-1.443/t/setup_common
-
+    q|my $count = chmod 0200, 'writeable', 'not_readable',|, # BDFOY/Test-File-1.443/t/setup_common
+    @subset,
 );
 
 for my $s (@strings, @more_strings) {
-#for my $s (@more_strings) {
     like($s, $qr_chmod_et_al, "'$s' matched");
+    my @captures = ();
+    @captures = $s =~ $qr_chmod_et_al;
+    is(@captures, 1, "Captured only the match of entire string: '$s'");
 }
 

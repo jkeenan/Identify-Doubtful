@@ -12,12 +12,11 @@ my $qrcomma = qr/\s*,\s*/;
 my $qrarrayref = qr/\[[^]]+\]/;
 my $qrfalse = qr/(?:0|''|"")/;
 my $qrfatarrow = qr/\s+=>\s+/;
-#my $funcs = qr/(?:chmod|mkdir)/;
 my $funcs = qr/mkdir/;
 my $qropenparen = qr/\s*\(\s*/;
 my $qrclosparen = qr/\s*\)\s*/;
 my $qrmf = qr/[0-7]/;
-my $qrmodes = qr/\b(20${qrmf}${qrmf}|02${qrmf}${qrmf}|00${qrmf}${qrmf}|0${qrmf}${qrmf}|2${qrmf}${qrmf}|00|0)\b/;
+my $qrmodes = qr/\b(?:20${qrmf}${qrmf}|02${qrmf}${qrmf}|00${qrmf}${qrmf}|0${qrmf}${qrmf}|2${qrmf}${qrmf}|00|0)\b/;
 my $qrspaceoropenparen = qr/(?:\s+|$qropenparen)/;
 my $qropenbrack = qr/\s*\[\s*/;
 my $qrclosbrack = qr/\s*\]\s*/;
@@ -33,7 +32,7 @@ my $qrmkdir = qr/
     [^,]+
     ${qrcomma}
     ${qrmodes}
-    ($qrclosparen)?
+    (?:$qrclosparen)?
 /x;
 
 my $qrchmod = qr/
@@ -43,7 +42,7 @@ my $qrchmod = qr/
     ${qrcomma}
     [^,]+
     (?:,[^,]+)*
-    ($qrclosparen)?
+    (?:$qrclosparen)?
 /x;
 
 my $qrmkpath = qr/
@@ -54,7 +53,7 @@ my $qrmkpath = qr/
     [01]
     ${qrcomma}
     ${qrmodes}
-    ($qrclosparen)?
+    (?:$qrclosparen)?
 /x;
 
 my $qrmkpath2 = qr/
@@ -68,7 +67,7 @@ my $qrmkpath2 = qr/
     [01]
     ${qrcomma}
     ${qrmodes}
-    ($qrclosparen)?
+    (?:$qrclosparen)?
 /x;
 
 =pod
@@ -89,7 +88,7 @@ my $qrmakepath = qr/
     (?:[^,]+${qrcomma})*
     mode${qrfatarrow}${qrmodes}
     ${qrcloscurly}
-    ($qrclosparen)?
+    (?:$qrclosparen)?
 /x;
 
 ########################################
@@ -97,16 +96,16 @@ my $qrmakepath = qr/
 our $qr_chmod_et_al;
 
 $qr_chmod_et_al = qr/
-    ( # mkdir
-    ${qrmkdir}
-    | # chmod
-    ${qrchmod}
-    | # mkpath
-    ${qrmkpath}
-    | # mkpath interface 2
-    ${qrmkpath2}
-    | # make_path
-    ${qrmakepath}
+    ( # This should be the only capture!
+    ${qrmkdir} # mkdir
+    |
+    ${qrchmod} # chmod
+    |
+    ${qrmkpath} # mkpath interface 1
+    |
+    ${qrmkpath2} # mkpath interface 2
+    |
+    ${qrmakepath} # make_path
     )
 /x;
 
