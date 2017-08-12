@@ -5,21 +5,9 @@ our @ISA         = qw(Exporter);
 our @EXPORT_OK = qw(
     fh_detect_some_unsafe
 );
-#detect_some_unsafe
 use Carp;
-use IO::File;
+#use IO::File;
 
-
-#sub detect_some_unsafe {
-#    my $file = shift;
-#
-#    my $IN = IO::File->new($file, 'r');
-#    unless (defined $IN) {
-#        carp "Unable to open '$file'";
-#        return;
-#    }
-#    return fh_detect_some_unsafe($IN);
-#}
 
 sub fh_detect_some_unsafe {
     my $IN = shift;
