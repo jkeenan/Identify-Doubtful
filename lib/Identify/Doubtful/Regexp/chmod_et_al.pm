@@ -6,14 +6,14 @@ our @EXPORT_OK = qw(
     $qr_chmod_et_al
 );
 use Carp;
-#use IO::File;
 
 my $qrstring = qr/[^,]+/;
 my $qrcomma = qr/\s*,\s*/;
 my $qrarrayref = qr/\[[^]]+\]/;
 my $qrfalse = qr/(?:0|''|"")/;
 my $qrfatarrow = qr/\s+=>\s+/;
-my $funcs = qr/(?:chmod|mkdir)/;
+#my $funcs = qr/(?:chmod|mkdir)/;
+my $funcs = qr/mkdir/;
 my $qropenparen = qr/\s*\(\s*/;
 my $qrclosparen = qr/\s*\)\s*/;
 my $qrmodes = qr/\b(2000|0200|0000|000|200|00|0)\b/;
@@ -23,12 +23,25 @@ my $qrclosbrack = qr/\s*\]\s*/;
 my $qropencurly = qr/\s*\{\s*/;
 my $qrcloscurly = qr/\s*\}\s*/;
 
-my $qrcm = qr/
-    ${funcs}
+#  my $cnt = chmod 0755, "foo", "bar";
+#  mkdir FILENAME,MASK
+
+my $qrmkdir = qr/
+    mkdir
     ${qrspaceoropenparen}
     [^,]+
     ${qrcomma}
     ${qrmodes}
+    ($qrclosparen)?
+/x;
+
+my $qrchmod = qr/
+    chmod
+    ${qrspaceoropenparen}
+    ${qrmodes}
+    ${qrcomma}
+    [^,]+
+    (?:,[^,]+)*
     ($qrclosparen)?
 /x;
 
@@ -78,9 +91,15 @@ my $qrmakepath = qr/
     ($qrclosparen)?
 /x;
 
-our $qr_chmod_et_al = qr/
-    ( # chmod or mkdir
-    ${qrcm}
+########################################
+
+our $qr_chmod_et_al;
+
+$qr_chmod_et_al = qr/
+    ( # mkdir
+    ${qrmkdir}
+    | # chmod
+    ${qrchmod}
     | # mkpath
     ${qrmkpath}
     | # mkpath interface 2
@@ -90,7 +109,5 @@ our $qr_chmod_et_al = qr/
     )
 /x;
 
-
 1;
-# The preceding line will help the module return a true value
 
