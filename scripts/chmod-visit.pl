@@ -13,7 +13,7 @@ use lib (
     '/home/jkeenan/gitwork/Identify-Doubtful/lib'
 );
 use Identify::Doubtful qw( match_file_against_regex );
-#use Identify::Doubtful::chmod_et_al ();
+use Identify::Doubtful::chmod_et_al qw( fh_detect_chmod_et_al );
 
 my $outputdir = "$ENV{HOMEDIR}/tmp";
 my ($contrib, $verbose, $quiet, $list) = ("") x 4;
@@ -102,7 +102,6 @@ sub visit_contributor_distros {
                         my $aref = [];
                         $aref = match_file_against_regex(
                             $f,
-                            #                            \&fh_detect_chmod_et_al,
                             \&Identify::Doubtful::chmod_et_al::fh_detect_chmod_et_al,
                         );
                         if (defined $aref and @{$aref}) {
