@@ -6,8 +6,7 @@ our @EXPORT_OK = qw(
     fh_detect_chmod_et_al
 );
 use Carp;
-use Identify::Doubtful::Regexp::chmod_et_al ( qw| $qr_chmod_et_al | );
-#use IO::File;
+use Regexp::Functions::chmod_et_al ( qw| $qr_chmod_et_al | );
 
 sub fh_detect_chmod_et_al {
     my $IN = shift;

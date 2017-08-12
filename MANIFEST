@@ -1,7 +1,6 @@
 Changes
 lib/Identify/Doubtful.pm
 lib/Identify/Doubtful/chmod_et_al.pm
-lib/Identify/Doubtful/Regexp/chmod_et_al.pm
 lib/Identify/Doubtful/rmtree.pm
 LICENSE
 Makefile.PL
@@ -10,4 +9,3 @@ MANIFEST.SKIP
 README
 scripts/chmod-visit.pl
 t/001-load.t
-t/002-chmod-et-al.t
