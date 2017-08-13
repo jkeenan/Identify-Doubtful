@@ -8,6 +8,7 @@ use CPAN::Mini::Visit::Simple;
 use File::Slurp;
 use Identify::Doubtful qw( match_file_against_regex );
 use Identify::Doubtful::chmod_et_al qw( fh_detect_chmod_et_al );
+use JSON;
 
 my $outputdir = "$ENV{HOMEDIR}/tmp";
 my ($contrib, $verbose, $quiet, $list) = ("") x 4;
@@ -50,8 +51,7 @@ my $focus = 'chmod_et_al';
 for my $con (@contributors) {
     say "Processing $con ..." unless $quiet;
     my $base = (split(/\//, $con))[2];
-    my $output = "$outputdir/$base.$focus.txt";
-    #sub list_contributor_distros {
+    my $output = "$outputdir/$base.$focus.json";
     my $dd;
     if ($list ) {
         $dd = list_contributor_distros($con, $quiet);
@@ -60,9 +60,11 @@ for my $con (@contributors) {
         $dd = visit_contributor_distros($con, $quiet);
     }
     if (keys %{$dd}) {
+        my $json = JSON->new->allow_nonref;
+        my $pretty_printed = $json->pretty->encode($dd);
         open my $OUT, '>', $output or croak "Unable to open $output for writing";
         my $oldfh = select($OUT);
-        dd($dd);
+        say $OUT $pretty_printed;
         select($oldfh);
         close $OUT or croak "Unable to close $output after writing";
     }
