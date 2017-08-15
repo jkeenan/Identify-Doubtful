@@ -4,13 +4,12 @@ use warnings;
 use Getopt::Long;
 use Carp;
 use Data::Dumper;
-use Data::Dump qw( dd pp );
+use Data::Dump qw( dd );
 use CPAN::Mini::Visit::Simple;
 use File::Slurp;
-use File::Temp qw( tempfile tempdir );
-use File::Copy;
+use File::Temp qw( tempdir );
 use File::Basename;
-use File::Find;
+use Archive::Extract;
 use JSON;
 
 my $sourcedir = "$ENV{HOMEDIR}/tmp/chmod_et_al";
@@ -23,20 +22,21 @@ croak "$id_dir not found" unless (-d $id_dir);
 opendir my $DIRH, $sourcedir or croak "Cannot opendir";
 my @files = sort grep { /chmod_et_al\.json$/ } readdir $DIRH;
 closedir $DIRH or croak "Cannot closedir";
-
 #dd(\@files);
 
-#####
 
 my %results;
 my @suffixlist = ( '.tgz', '.tar.gz' );
+my $out = "/home/jkeenan/learn/perl/file-path/tempdir-bad-perms-files.txt";
+open my $OUT, '>', $out or croak "Unable to open $out for writing";
 
 for my $f (@files) {
     my ($cpanid) = $f =~ m/^([^.]+)\./;
     #say $cpanid;
     my $first_level = substr($cpanid,0,1);
     my $second_level = substr($cpanid,0,2);
-    my $expected_dir  = "$id_dir/$first_level/$second_level/$cpanid";
+    my $all_levels = "$first_level/$second_level/$cpanid";
+    my $expected_dir  = "$id_dir/$all_levels";
     #say $expected_dir;
     my $content = read_file("$sourcedir/$f");
     my $json = JSON->new->allow_nonref;
@@ -51,8 +51,10 @@ for my $f (@files) {
     DISTRO: for my $tarball (sort keys %$distro_href) {
         my $d = basename($tarball, @suffixlist);
         my $pathname = "$expected_dir/$tarball";
-        say join('|' => $d, $pathname);
+        #say join('|' => $d, $pathname);
         # GlbDNS-0.30|/home/jkeenan/minicpan/authors/id/A/AB/ABERGMAN/GlbDNS-0.30.tar.gz
+        my %targets = map { $_ => 1 } keys %{$distro_href->{$tarball}};
+        #dd(\%targets);
         unless (-f $pathname) {
             # Anomaly: B/BW/BWARFIELD/Test-AutoLoader-0.03.tar.gz
             # is actually: B/BW/BWARFIELD/NRGN/Test-AutoLoader-0.03.tar.gz
@@ -60,67 +62,36 @@ for my $f (@files) {
             next DISTRO;
         }
         my $tdir = tempdir( CLEANUP => 1 );
-        copy $pathname => $tdir or carp "Could not copy $pathname" and next DISTRO;
-        # We probably want to use Archive Extract here.
-        chdir $tdir or carp "Could not change directory " and next DISTRO;
-        if (system(qq{tar xzf $pathname})) {
-            carp "Could not untar";
-            next DISTRO;
-        }
-        # At this point you're in a tdir one level above the top-level dir of
-        # an unwrapped tarball.  The name of that top-level dir cannot be
-        # precisely predicted in a non-trivial percentage of cases.  So, to
-        # locate the files we need to grep for tempdir|newdir, we need to do a
-        # 'find' searching for files whose names match each element in:
+        my $ae = Archive::Extract->new( archive => $pathname )
+            or carp "Could not run AE constructor for $pathname";
+        my $ok = $ae->extract( to => $tdir )
+            or carp "Could not extract $pathname";
+        my $outdir  = $ae->extract_path;
+		my $outdirname = dirname($outdir);
+        my $files = $ae->files;
+        #dd([ $outdirname, $files ]);
+        my $truefiles = [ grep { -f $_ } map { "$outdirname/$_" } @$files ];
+        #dd([ $outdirname, $truefiles ]);
 
-        #dd( [ keys %{$distro_href->{$tarball}} ] );
-        #["t/zone.t", "t/zone_dir.t"]
-
-        my @files_for_grep = ();
-        my %targets = map { $_ => 1 } keys %{$distro_href->{$tarball}};
-        #dd(\%targets);
-        say "->  $_" for sort keys %targets;
-        #sub wanted { $targets{$_} and push @files_for_grep, $File::Find::name; }
-        #sub wanted { if ($targets{$_}) { say "<$_>"; } }
-        #sub wanted { if (-f $_) { say "    <$File::Find::name>"; } }
-#    <./GlbDNS-0.30.tar.gz>
-#    <./GlbDNS-0.30/META.yml>
-#    <./GlbDNS-0.30/Changes>
-#    <./GlbDNS-0.30/MANIFEST> 
-#    <./GlbDNS-0.30/Makefile.PL>
-#    <./GlbDNS-0.30/README>
-#    <./GlbDNS-0.30/t/daemon.t>
-#    <./GlbDNS-0.30/t/show-calling-server.t>
-#    <./GlbDNS-0.30/t/geo.t>
-#    <./GlbDNS-0.30/t/zone.t>
-#    <./GlbDNS-0.30/t/zone_dir.t>
-
-        sub wanted {
-            if (-f $_) {
-                #say "    <$File::Find::name>";
-                my $n = $File::Find::name;
-                my $o;
-                if (($o) = $n =~ m{^\./[^/]+?/(.*)}) {
-                    #say "    |$n|";
-                    say "    |$o|";
-                    #if ($targets{$o}) {
-                    #    say "BINGO: $o";
-                        push @files_for_grep, $o;
-                        #}
-                }
-                else {
-                    #say "    No!";
+        #index STR,SUBSTR
+        for my $key (sort keys %targets) {
+            for my $path (@{$truefiles}) {
+                my $rv = index $path, $key;
+                if ($rv != -1) {
+                    say $OUT join('|' => $all_levels, $tarball, $key);
+                    my @greps = `grep -n -E 'tempdir|newdir' $path`;
+                    chomp(@greps);
+                    if (@greps) {
+                        for my $s (@greps) {
+                            say $OUT "    $s";
+                        }
+                    }
                 }
             }
         }
-        find(\&wanted, '.');
-        %targets = ();
-        dd(\@files_for_grep);
-
-
-#        for my $f (keys %{$distro_href->{$tarball}}) {
-#            (-f $f) and say "    $f";
-#        }
     }
 }
+
+close $OUT or croak "Unable to close $out after writing";
+say "\nFinished!";
 
